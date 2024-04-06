@@ -1,11 +1,52 @@
+import { useState } from "react";
 import Note from "./components/Note";
 
 const App = ({ notes }) => {
+  const [currentNotes, setCurrentNotes] = useState(notes);
+  const [newNote, setNewNote] = useState("");
+  const [showAll, setShowAll] = useState(true);
+
+  // since note.important is true or false, comparison "=== true" isn't needed in filter test
+  const visibleNotes = showAll
+    ? currentNotes
+    : currentNotes.filter((note) => note.important);
+
+  const addNote = (event) => {
+    event.preventDefault();
+    console.log("Button Clicked", event.target);
+    const newNoteObject = {
+      id: notes.length + 1,
+      content: newNote,
+      important: Math.random() < 0.5,
+    };
+
+    setCurrentNotes(currentNotes.concat(newNoteObject));
+    setNewNote("");
+  };
+
+  const handleNoteChange = (event) => {
+    setNewNote(event.target.value);
+  };
   return (
     <div>
       <h1>Notes</h1>
+      <button
+        onClick={() => {
+          setShowAll(!showAll);
+        }}
+      >
+        show {showAll ? "important" : "all"}
+      </button>
+      <form onSubmit={addNote}>
+        <input
+          placeholder={"a new note..."}
+          value={newNote}
+          onChange={handleNoteChange}
+        />
+        <button type="submit">add note</button>
+      </form>
       <ul>
-        {notes.map((note) => (
+        {visibleNotes.map((note) => (
           <Note key={note.id} note={note} />
         ))}
       </ul>
