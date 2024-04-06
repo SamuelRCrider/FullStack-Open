@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Note from "./components/Note";
+import axios from "axios";
 
-const App = ({ notes }) => {
-  const [currentNotes, setCurrentNotes] = useState(notes);
+const App = () => {
+  const [currentNotes, setCurrentNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
+
+  useEffect(() => {
+    console.log("effect");
+    axios.get("http://localhost:3001/notes").then((res) => {
+      console.log("promise fulfilled", res);
+      setCurrentNotes(res.data);
+    });
+  }, []);
+  console.log("render", currentNotes.length, "notes");
 
   // since note.important is true or false, comparison "=== true" isn't needed in filter test
   const visibleNotes = showAll
@@ -15,7 +25,7 @@ const App = ({ notes }) => {
     event.preventDefault();
     console.log("Button Clicked", event.target);
     const newNoteObject = {
-      id: notes.length + 1,
+      id: currentNotes.length + 1,
       content: newNote,
       important: Math.random() < 0.5,
     };
