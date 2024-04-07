@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Filter from "./components/Filter/component";
 import AddPersonForm from "./components/AddPersonForm/component";
 import PhoneBook from "./components/PhoneBook/component";
-import axios from "axios";
+import personsService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,10 +11,10 @@ const App = () => {
   const [personFilter, setPersonFilter] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((res) => {
-      setPersons(res.data);
-    }, []);
-  });
+    personsService.getAll().then((allPersons) => {
+      setPersons(allPersons);
+    });
+  }, []);
 
   // >= 0 ensures accurate search results
   const filteredPersons = persons.filter(
@@ -22,12 +22,47 @@ const App = () => {
   );
 
   const checkPhoneBook = (object) => {
-    persons.forEach((person) => {
-      if (object.name === person.name) {
-        alert(`${object.name} is already in phonebook`);
-        throw new Error("This name is already in phonebook");
+    // See if new name matches an existing name
+    const foundPerson = persons.find((p) => p.name === object.name);
+
+    if (foundPerson) {
+      // If name does match a name, foundPerson will be populated with that person
+      // Check if user wants to change number of existing person
+      if (
+        window.confirm(
+          `${object.name} is already in phonebook, would you like to replace their number with the new one?`
+        )
+      ) {
+        // If yes, spread the found person and then change their number
+        const changedPersonsNumber = { ...foundPerson, number: object.number };
+        // Update the backend, then update the frontend by setting persons to a map of persons with
+        // the found person overwritten by the updated person, then reset inputs
+        personsService
+          .update(foundPerson.id, changedPersonsNumber)
+          .then((updatedPersons) => {
+            setPersons(
+              persons.map((p) => (p.id !== foundPerson.id ? p : updatedPersons))
+            );
+            setNewName("");
+            setNewNumber("");
+          });
       }
-    });
+    } else {
+      // If found person is null, add the new object (new person) to the backend
+      // then update the frontend with the addition of the newly created person
+      personsService.create(object).then((createdPerson) => {
+        setPersons(persons.concat(createdPerson));
+        setNewName("");
+        setNewNumber("");
+      });
+    }
+  };
+
+  const handleDelete = (personId) => {
+    if (window.confirm("Are you sure you want to delete this person?"))
+      personsService
+        .deletePerson(personId)
+        .then(setPersons(persons.filter((p) => p.id !== personId)));
   };
 
   const handleNewName = (event) => {
@@ -38,10 +73,6 @@ const App = () => {
     };
 
     checkPhoneBook(newNameObject);
-
-    setPersons(persons.concat(newNameObject));
-    setNewName("");
-    setNewNumber("");
   };
 
   const onNameChange = (event) => {
@@ -71,6 +102,7 @@ const App = () => {
         personFilter={personFilter}
         filteredPersons={filteredPersons}
         persons={persons}
+        handleDelete={handleDelete}
       />
     </div>
   );
