@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import Note from "./components/Note";
 import noteService from "./services/notes";
+import ErrorMessage from "./components/ErrorMessage";
+import "./index.css";
+import Footer from "./components/Footer";
 
 const App = () => {
   const [currentNotes, setCurrentNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
+  const [errorMessage, setErrorMessage] = useState();
 
   // get notes from backend every render
   useEffect(() => {
@@ -62,13 +66,19 @@ const App = () => {
       })
       .catch((error) => {
         console.error(error);
-        alert(`The note ${note.content} was already deleted from the server!`);
+        setErrorMessage(
+          `The note ${note.content} was already deleted from the server!`
+        );
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
         setCurrentNotes(currentNotes.filter((n) => n.id !== noteId));
       });
   };
 
   return (
     <div>
+      <ErrorMessage message={errorMessage} />
       <h1>Notes</h1>
       <button
         onClick={() => {
@@ -94,6 +104,7 @@ const App = () => {
           />
         ))}
       </ul>
+      <Footer />
     </div>
   );
 };
