@@ -56,10 +56,6 @@ app.post("/api/notes", (req, res) => {
   res.json(note);
 });
 
-app.get("/", (req, res) => {
-  res.send("<h1>Hello, World</h1>");
-});
-
 app.get("/api/notes", (req, res) => {
   res.json(notes);
 });
