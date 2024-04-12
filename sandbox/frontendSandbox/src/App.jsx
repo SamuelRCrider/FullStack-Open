@@ -67,12 +67,12 @@ const App = () => {
       .catch((error) => {
         console.error(error);
         setErrorMessage(
-          `The note ${note.content} was already deleted from the server!`
+          `The importance of note ${note.content} couldn't be changed`
         );
         setTimeout(() => {
           setErrorMessage(null);
         }, 5000);
-        setCurrentNotes(currentNotes.filter((n) => n.id !== noteId));
+        // setCurrentNotes(currentNotes.filter((n) => n.id !== noteId));
       });
   };
 
