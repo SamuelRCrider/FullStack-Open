@@ -44,7 +44,7 @@ const App = () => {
           .update(foundPerson.id, changedPersonsNumber)
           .then((updatedPersons) => {
             setMessage({
-              message: `${updatedPersons.name} has been changed to ${updatedPersons.number}!`,
+              message: `Your number for ${updatedPersons.name} has been changed to ${updatedPersons.number}!`,
               error: null,
             });
             setTimeout(() => {
@@ -57,14 +57,14 @@ const App = () => {
             setNewNumber("");
           })
           .catch((error) => {
+            console.log(error.response.data.error);
             setMessage({
-              message: `${object.name} has already been deleted from the phonebook!`,
+              message: error.response.data.error,
               error: error,
             });
             setTimeout(() => {
               setMessage({ message: null, error: null });
             }, 5000);
-            setPersons(persons.filter((p) => p.id !== foundPerson.id));
             setNewName("");
             setNewNumber("");
           });
@@ -72,18 +72,32 @@ const App = () => {
     } else {
       // If found person is null, add the new object (new person) to the backend
       // then update the frontend with the addition of the newly created person
-      personsService.create(object).then((createdPerson) => {
-        setMessage({
-          message: `${createdPerson.name} has been added to the Phonebook!`,
-          error: null,
+      personsService
+        .create(object)
+        .then((createdPerson) => {
+          setMessage({
+            message: `${createdPerson.name} has been added to the Phonebook!`,
+            error: null,
+          });
+          setTimeout(() => {
+            setMessage({ message: null, error: null });
+          }, 5000);
+          setPersons(persons.concat(createdPerson));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          console.log(error.response.data.error);
+          setMessage({
+            message: error.response.data.error,
+            error: error,
+          });
+          setTimeout(() => {
+            setMessage({ message: null, error: null });
+          }, 5000);
+          setNewName("");
+          setNewNumber("");
         });
-        setTimeout(() => {
-          setMessage({ message: null, error: null });
-        }, 5000);
-        setPersons(persons.concat(createdPerson));
-        setNewName("");
-        setNewNumber("");
-      });
     }
   };
 
