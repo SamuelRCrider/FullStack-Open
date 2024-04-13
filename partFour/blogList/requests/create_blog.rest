@@ -2,8 +2,8 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-    "title": "second blog (meow)",
+    "title": "third blog (ruff ruff)",
   "author": "samtheboi",
   "url": "www.coolguysam.com",
-  "likes": 12
+  "likes": 34
 }
