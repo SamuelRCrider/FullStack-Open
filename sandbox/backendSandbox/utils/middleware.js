@@ -13,7 +13,7 @@ const unknownEndpoint = (req, res) => {
 };
 
 const errorHandler = (error, req, res, next) => {
-  logger.error("DEEZNUTRS", error.message);
+  logger.error(error.message);
 
   if (error.name === "CastError") {
     return res.status(400).send({ error: "malformatted id" });
@@ -21,6 +21,12 @@ const errorHandler = (error, req, res, next) => {
     return res.status(400).json({ error: error.message });
   } else if (error.name === "MongoServerError") {
     return res.status(400).json({ error: "expected `username` to be unique" });
+  } else if (error.name === "JsonWebTokenError") {
+    return response.status(401).json({ error: "token invalid" });
+  } else if (error.name === "TokenExpiredError") {
+    return response.status(401).json({
+      error: "token expired",
+    });
   }
 
   next(error);
