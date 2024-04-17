@@ -2,6 +2,7 @@ POST http://localhost:3002/api/notes
 Content-Type: application/json
 
 {
-    "content": "Hel",
-    "important": true
+    "content": "waaaaamannnnn",
+    "important": true,
+    "user": "661ff651af44b700e598a1b2"
 }
