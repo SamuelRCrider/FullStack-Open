@@ -1,8 +1,9 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY2MjA2MmI5N2Q4NmZmNGU5MTdmZWMxMSIsImlhdCI6MTcxMzQwNDczMCwiZXhwIjoxNzEzNDA4MzMwfQ.cCsPbwHLN9eVGa0YIFDI7xV5jfybVUq_YeUb23iIcG4
 
 {
-    "title": "third blog (ruff ruff)",
+  "title": "seventh blog (ruff ruff)",
   "author": "samtheboi",
   "url": "www.coolguysam.com",
   "likes": 34

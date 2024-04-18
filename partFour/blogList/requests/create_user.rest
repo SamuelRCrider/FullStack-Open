@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/users
+Content-Type: application/json
+
+{
+    "username": "root",
+    "password": "samiscools",
+    "name": "sam"
+}
+
+# id is 662062b97d86ff4e917fec11
