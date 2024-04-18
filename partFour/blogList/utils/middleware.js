@@ -4,8 +4,6 @@ const extractToken = (req, res, next) => {
   const authorization = req.get("authorization");
   if (authorization && authorization.startsWith("Bearer")) {
     req.token = authorization.replace("Bearer ", "");
-  } else {
-    logger.error("no token found, no user logged in");
   }
   next();
 };
@@ -20,9 +18,9 @@ const errorHandler = (error, req, res, next) => {
   } else if (error.name === "MongoServerError") {
     return res.status(400).json({ error: "expected `username` to be unique" });
   } else if (error.name === "JsonWebTokenError") {
-    return response.status(401).json({ error: "token invalid" });
+    return res.status(401).json({ error: "token invalid" });
   } else if (error.name === "TokenExpiredError") {
-    return response.status(401).json({
+    return res.status(401).json({
       error: "token expired",
     });
   }
