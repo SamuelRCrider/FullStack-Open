@@ -1,10 +1,10 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY2MjA2MmI5N2Q4NmZmNGU5MTdmZWMxMSIsImlhdCI6MTcxMzQwODY1MSwiZXhwIjoxNzEzNDEyMjUxfQ.UXGr9m8rVZ2J3rj_yeoLiaS_82kk2PPUpNG1AstH7fU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY2MjA2MmI5N2Q4NmZmNGU5MTdmZWMxMSIsImlhdCI6MTcxMzU2OTg5MiwiZXhwIjoxNzEzNTczNDkyfQ.GArh8CpcDGON57d521k2lvr4NWa7Jl7mp39TD9ZRvDw
 
 {
-  "title": "second real blog",
+  "title": "third real blog",
   "author": "samtheboi",
   "url": "www.coolguysam.com",
-  "likes": 8765
+  "likes": 562
 }
