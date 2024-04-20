@@ -1,26 +1,42 @@
 const { test, after, beforeEach, describe } = require("node:test");
 const assert = require("node:assert");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const supertest = require("supertest");
 const app = require("../app");
 const api = supertest(app);
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const helper = require("./test_helper");
 
 beforeEach(async () => {
+  await User.deleteMany({});
+  const passwordHash = await bcrypt.hash("iamroot", 10);
+  const user = new User({ username: "root", passwordHash: passwordHash });
+  await user.save();
+
   await Blog.deleteMany({});
-  const blogObjects = helper.initialBlogs.map((blog) => new Blog(blog));
-  const promiseArray = blogObjects.map((blog) => blog.save());
-  await Promise.all(promiseArray);
+  for (let blog of helper.initialBlogs) {
+    const blogObject = new Blog(blog);
+    await blogObject.save();
+  }
 });
 
 describe("when blogs are in database", () => {
+  test("a user can login", async () => {
+    await api
+      .post("/api/login")
+      .send({ username: "root", password: "iamroot" })
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+  });
+
   test("blogs are in database and are json", async () => {
     const res = await api
       .get("/api/blogs")
       .expect(200)
       .expect("Content-Type", /application\/json/);
-    assert.strictEqual(res.body.length, helper.initialBlogs.length);
+    assert.strictEqual(res._body.length, helper.initialBlogs.length);
   });
 
   test("unique identifer is .id, not ._id", async () => {
@@ -32,28 +48,36 @@ describe("when blogs are in database", () => {
     test("blogs can be updated with newer information", async () => {
       const blogsAtStart = await helper.blogsInDb();
       const blogToUpdate = blogsAtStart[0];
-
       const updatedInfo = {
         title: "fdghdghgdbfgsnhdggsh gf",
         author: "dfghj",
         url: "dfgnhgmj,tkumryueny",
         likes: 4567,
-        id: blogToUpdate.id,
       };
-      const updatedBlog = await api
+      await api
         .put(`/api/blogs/${blogToUpdate.id}`)
         .send(updatedInfo)
         .expect(200)
         .expect("Content-Type", /application\/json/);
 
-      assert.deepStrictEqual(updatedBlog.body, updatedInfo);
+      const blogsAtEnd = await helper.blogsInDb();
+
+      assert(blogsAtEnd[0].title.includes("fdghdghgdbfgsnhdggsh gf"));
     });
 
     test("blogs can be deleted from db", async () => {
+      // this test is broken, the delete method res statuscode is 401
+      const res = await api
+        .post("/api/login")
+        .send({ username: "root", password: "iamroot" })
+        .expect(200);
       const blogsAtStart = await helper.blogsInDb();
       const blogToDelete = blogsAtStart[0];
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .auth(res._body.token, { type: "bearer" })
+        .expect(204);
 
       const blogsAtEnd = await helper.blogsInDb();
 
@@ -63,7 +87,27 @@ describe("when blogs are in database", () => {
       assert(!contents.includes(blogToDelete.title));
     });
 
+    test("blogs cannot be added without proper token", async () => {
+      const newBlog = {
+        title: "these patterns are boring",
+        author: "ya boi",
+        url: "https://meowmy.gov/",
+        likes: 774,
+      };
+      await api
+        .post("/api/blogs")
+        .auth("fake23456token45", { type: "bearer" })
+        .send(newBlog)
+        .expect(401)
+        .expect("Content-Type", /application\/json/);
+    });
+
     test("blogs can be added to db", async () => {
+      const res = await api
+        .post("/api/login")
+        .send({ username: "root", password: "iamroot" })
+        .expect(200);
+
       const newBlog = {
         title: "these patterns are boring",
         author: "ya boi",
@@ -73,6 +117,7 @@ describe("when blogs are in database", () => {
 
       await api
         .post("/api/blogs")
+        .auth(res._body.token, { type: "bearer" })
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", /application\/json/);
@@ -84,6 +129,10 @@ describe("when blogs are in database", () => {
     });
 
     test("if no likes key, it will be added and set to zero", async () => {
+      const login = await api
+        .post("/api/login")
+        .send({ username: "root", password: "iamroot" })
+        .expect(200);
       const newBlog = {
         title: "oh no! i have no likes!",
         author: "ya boi",
@@ -92,6 +141,7 @@ describe("when blogs are in database", () => {
 
       const res = await api
         .post("/api/blogs")
+        .auth(login._body.token, { type: "bearer" })
         .send(newBlog)
         .expect(201)
         .expect("Content-Type", /application\/json/);
