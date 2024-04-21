@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Note from "./components/Note";
 import noteService from "./services/notes";
+import loginService from "./services/login";
 import ErrorMessage from "./components/ErrorMessage";
 import "./index.css";
 import Footer from "./components/Footer";
@@ -10,6 +11,9 @@ const App = () => {
   const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [user, setUser] = useState(null);
 
   // get notes from backend every render
   useEffect(() => {
@@ -20,6 +24,15 @@ const App = () => {
     });
   }, []);
   console.log("render", currentNotes.length, "notes");
+
+  useEffect(() => {
+    const loggedInJSON = window.localStorage.getItem("loggedInNoteAppUser");
+    if (loggedInJSON) {
+      const user = JSON.parse(loggedInJSON);
+      setUser(user);
+      noteService.setToken(user.token);
+    }
+  }, []);
 
   // since note.important is true or false, comparison "=== true" isn't needed in filter test
   const visibleNotes = showAll
@@ -46,6 +59,27 @@ const App = () => {
 
   const handleNoteChange = (event) => {
     setNewNote(event.target.value);
+  };
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    console.log("logging in with...", username, password);
+
+    try {
+      const user = await loginService.login({ username, password });
+
+      window.localStorage.setItem("loggedInNoteAppUser", JSON.stringify(user));
+      noteService.setToken(user.token);
+      setUser(user);
+      setUsername("");
+      setPassword("");
+    } catch (error) {
+      console.error(error.message);
+      setErrorMessage("Invalid Credentials");
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+    }
   };
 
   // change the importance of a note, updating it in the backend
@@ -76,17 +110,34 @@ const App = () => {
       });
   };
 
-  return (
-    <div>
-      <ErrorMessage message={errorMessage} />
-      <h1>Notes</h1>
-      <button
-        onClick={() => {
-          setShowAll(!showAll);
-        }}
-      >
-        show {showAll ? "important" : "all"}
-      </button>
+  const loginForm = () => {
+    return (
+      <form onSubmit={handleLogin}>
+        <div>
+          Username{" "}
+          <input
+            type="text"
+            name="Username"
+            value={username}
+            onChange={({ target }) => setUsername(target.value)}
+          />
+        </div>
+        <div>
+          Password{" "}
+          <input
+            type="password"
+            name="Password"
+            value={password}
+            onChange={({ target }) => setPassword(target.value)}
+          />
+        </div>
+        <button type="submit">login</button>
+      </form>
+    );
+  };
+
+  const newNoteForm = () => {
+    return (
       <form onSubmit={addNote}>
         <input
           placeholder={"a new note..."}
@@ -95,6 +146,35 @@ const App = () => {
         />
         <button type="submit">add note</button>
       </form>
+    );
+  };
+
+  const handleLogout = () => {
+    window.localStorage.removeItem("loggedInNoteAppUser");
+    setUser(null);
+  };
+
+  return (
+    <div>
+      <ErrorMessage message={errorMessage} />
+      {!user ? (
+        loginForm()
+      ) : (
+        <div>
+          <p>{user.name} logged in</p>
+          <button onClick={handleLogout}>Logout</button>
+          {newNoteForm()}
+        </div>
+      )}
+      <h1>Notes</h1>
+      <button
+        onClick={() => {
+          setShowAll(!showAll);
+        }}
+      >
+        show {showAll ? "important" : "all"}
+      </button>
+
       <ul>
         {visibleNotes.map((note) => (
           <Note
