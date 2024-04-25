@@ -10,12 +10,8 @@ const setToken = (newToken) => {
 
 const getAll = () => {
   const request = axios.get(baseUrl);
-  const hardcodedNote = {
-    id: 1000,
-    content: "This is a FAKE note, NOT saved to server",
-    important: true,
-  };
-  return request.then((res) => res.data.concat(hardcodedNote));
+
+  return request.then((res) => res.data);
 };
 
 const create = async (newObject) => {
