@@ -2,7 +2,6 @@
 
 const { test, expect, describe, beforeEach } = require("@playwright/test");
 const { loginWith, createNewNote } = require("./test_helper");
-const { name } = require("../playwright.config");
 
 describe("Note app", () => {
   beforeEach(async ({ page, request }) => {
