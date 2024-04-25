@@ -1,9 +1,9 @@
 POST http://localhost:3002/api/notes
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY2MWZmNjUxYWY0NGI3MDBlNTk4YTFiMiIsImlhdCI6MTcxMzM3NTg4MH0._Z6hz4UgzkkODK6u9m2RSALIBLLyLtjR-r5vZkOjd1Y
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY2MmE0YmNiMjlkOTU5NWFjNGFhOTg0OCIsImlhdCI6MTcxNDA0Nzk4MSwiZXhwIjoxNzE0MDUxNTgxfQ.7N18j-bxElB0nZnhUShX2tov3le4zd9qLyGRNfXvjsg
 
 {
-    "content": "waaaaamannnnn",
+    "content": "fourth test note",
     "important": true, 
-    "user": "661ff651af44b700e598a1b2"
+    "user": "662a4bcb29d9595ac4aa9848"
 }

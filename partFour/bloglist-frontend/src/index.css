@@ -1,0 +1,26 @@
+.errorMessage {
+  color: red;
+  background: lightgrey;
+  font-size: 20px;
+  border-style: solid;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.successMessage {
+  color: green;
+  background: lightgrey;
+  font-size: 20px;
+  border-style: solid;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* .blogStyle {
+  padding-top: 10;
+  padding-left: 2;
+  border: "solid";
+  border-width: 1;
+  margin-bottom: 5;
+} */

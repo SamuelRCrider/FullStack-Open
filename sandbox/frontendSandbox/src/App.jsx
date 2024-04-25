@@ -1,15 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Note from "./components/Note";
 import noteService from "./services/notes";
+import loginService from "./services/login";
 import ErrorMessage from "./components/ErrorMessage";
 import "./index.css";
 import Footer from "./components/Footer";
+import LoginForm from "./components/LoginForm";
+import Togglable from "./components/Togglable";
+import NewNoteForm from "./components/NewNoteForm";
 
 const App = () => {
   const [currentNotes, setCurrentNotes] = useState([]);
-  const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState();
+  const [user, setUser] = useState(null);
+
+  const newNoteFormRef = useRef();
 
   // get notes from backend every render
   useEffect(() => {
@@ -21,31 +27,42 @@ const App = () => {
   }, []);
   console.log("render", currentNotes.length, "notes");
 
+  useEffect(() => {
+    const loggedInJSON = window.localStorage.getItem("loggedInNoteAppUser");
+    if (loggedInJSON) {
+      const user = JSON.parse(loggedInJSON);
+      setUser(user);
+      noteService.setToken(user.token);
+    }
+  }, []);
+
   // since note.important is true or false, comparison "=== true" isn't needed in filter test
   const visibleNotes = showAll
     ? currentNotes
     : currentNotes.filter((note) => note.important);
 
-  // create new note obj and post it to backend
-  const addNote = (event) => {
-    // we don't want to actually submit the html form
-    event.preventDefault();
-    console.log("Button Clicked", event.target);
-    // create note obj, id will be determined by server
-    const newNoteObject = {
-      content: newNote,
-      important: Math.random() < 0.5,
-    };
+  const addNote = async (newNoteObject) => {
     // send new note obj to server and then set notes to the current notes plus the new note
-    noteService.create(newNoteObject).then((createdNote) => {
-      console.log(createdNote);
-      setCurrentNotes(currentNotes.concat(createdNote));
-      setNewNote("");
-    });
+    newNoteFormRef.current.toggleVisibility();
+    const createdNote = await noteService.create(newNoteObject);
+
+    setCurrentNotes(currentNotes.concat(createdNote));
   };
 
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value);
+  const handleLogin = async (userObj) => {
+    try {
+      const user = await loginService.login(userObj);
+
+      window.localStorage.setItem("loggedInNoteAppUser", JSON.stringify(user));
+      noteService.setToken(user.token);
+      setUser(user);
+    } catch (error) {
+      console.error(error.message);
+      setErrorMessage("Invalid Credentials");
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+    }
   };
 
   // change the importance of a note, updating it in the backend
@@ -76,9 +93,27 @@ const App = () => {
       });
   };
 
+  const handleLogout = () => {
+    window.localStorage.removeItem("loggedInNoteAppUser");
+    setUser(null);
+  };
+
   return (
     <div>
       <ErrorMessage message={errorMessage} />
+      {!user ? (
+        <Togglable buttonLabel="Login">
+          <LoginForm login={handleLogin} />
+        </Togglable>
+      ) : (
+        <div>
+          <p>{user.name} logged in</p>
+          <button onClick={handleLogout}>Logout</button>
+          <Togglable buttonLabel="Create a Note" ref={newNoteFormRef}>
+            <NewNoteForm createNote={addNote} />
+          </Togglable>
+        </div>
+      )}
       <h1>Notes</h1>
       <button
         onClick={() => {
@@ -87,14 +122,7 @@ const App = () => {
       >
         show {showAll ? "important" : "all"}
       </button>
-      <form onSubmit={addNote}>
-        <input
-          placeholder={"a new note..."}
-          value={newNote}
-          onChange={handleNoteChange}
-        />
-        <button type="submit">add note</button>
-      </form>
+
       <ul>
         {visibleNotes.map((note) => (
           <Note
